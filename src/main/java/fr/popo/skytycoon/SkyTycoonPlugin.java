@@ -56,9 +56,10 @@ public class SkyTycoonPlugin extends JavaPlugin implements Listener {
 
         // Initialiser les managers dans le bon ordre
         this.machineManager = new MachineManager(this);
-
-        // Configurer le LangManager pour les hologrammes
+        // Configurer le LangManager pour les hologrammes AVANT le chargement des machines
         machineManager.setLangManager(langManager);
+        // Charger les machines persistées
+        this.machineManager.loadMachinesFromFile();
 
         this.worldManager = new WorldManager(this);
 
@@ -67,6 +68,8 @@ public class SkyTycoonPlugin extends JavaPlugin implements Listener {
             if (world != null) {
                 // Une fois le monde créé, initialiser l'IslandManager
                 this.islandManager = new IslandManager(this, worldManager);
+                // Charger les îles persistées
+                this.islandManager.loadIslandsFromFile();
                 getLogger().info("Système d'îles initialisé avec succès!");
             } else {
                 getLogger().severe("Échec d'initialisation du monde, système d'îles désactivé");
@@ -90,7 +93,11 @@ public class SkyTycoonPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
+        if (machineManager != null) {
+            machineManager.saveMachinesToFile();
+        }
         if (islandManager != null) {
+            islandManager.saveIslandsToFile();
             islandManager.shutdown();
         }
         getLogger().info("SkyTycoon désactivé");

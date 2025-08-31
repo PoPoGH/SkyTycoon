@@ -33,6 +33,11 @@ public class MachineManager {
     // Compteur interne pour remplacer le temps du monde qui peut être bloqué
     private final Map<Location, Long> machineTickCounters = new ConcurrentHashMap<>();
 
+    // Pour éviter les updates inutiles d'hologramme
+    private final Map<Location, Integer> lastDisplayedAmount = new ConcurrentHashMap<>();
+    private final Map<Location, Integer> lastDisplayedProgress = new ConcurrentHashMap<>();
+    private final Map<Location, String> lastDisplayedBar = new ConcurrentHashMap<>();
+
     public MachineManager(SkyTycoonPlugin plugin) {
         this.plugin = plugin;
         this.keyMachineId = new NamespacedKey(plugin, "machine-id");
@@ -98,61 +103,71 @@ public class MachineManager {
         
         // Créer l'hologramme pour cette machine avec l'ID pour le formatage
         hologramManager.createMachineHologram(am.location(), am.def().displayName(), id);
+
+        // Sauvegarder après ajout
+        saveMachinesToFile();
     }
 
     private void scheduleMachine(ActiveMachine am) {
         Location l = am.location();
         plugin.getLogger().info("Démarrage de la machine " + am.def().displayName() + " à " + 
             l.getBlockX() + "," + l.getBlockY() + "," + l.getBlockZ());
-        
-        // Initialiser le compteur de ticks pour cette machine
-        machineTickCounters.put(l, 0L);
-        
-        // Scheduler avec compteur interne au lieu du temps du monde
+        long startTick = am.nextTick() - am.getCurrentInterval();
+        if (startTick < 0) startTick = 0;
+        machineTickCounters.put(l, startTick);
+        Material mainProductMaterial = am.getMainProduct();
+        lastDisplayedAmount.put(l, am.getStoredAmount(mainProductMaterial));
+        lastDisplayedProgress.put(l, 0);
+        lastDisplayedBar.put(l, "");
         var task = Bukkit.getRegionScheduler().runAtFixedRate(plugin, l, scheduledTask -> {
-            // Incrémenter notre compteur interne
             long currentTick = machineTickCounters.merge(l, 1L, Long::sum);
-            
+            Material mainProductMaterial1 = am.getMainProduct();
+            String mainProduct = mainProductMaterial1.name().toLowerCase().replace("_", " ");
+            int amount = am.getStoredAmount(mainProductMaterial1);
+            long interval = am.getCurrentInterval();
+            long startTickVal = am.nextTick() - interval;
+            int progressMax = (int) interval;
+            int progressCurrent = (int) Math.max(0, Math.min(interval, currentTick - startTickVal));
+            String progressBar = "";
+            if (plugin.getLangManager() != null && am.def() != null) {
+                progressBar = plugin.getLangManager().createProgressBar(progressCurrent, progressMax).toString();
+            }
+            // Production
             if(currentTick >= am.nextTick()) {
                 System.out.println("[SkyTycoon] *** PRODUCTION TIME! ***");
-                
-                // Production avec animations dans le stockage de la machine !
                 boolean produced = am.produceAndCheck();
                 System.out.println("[SkyTycoon] Production result: " + produced);
-                
                 if (produced) {
-                    // Mettre à jour l'hologramme avec les nouvelles quantités
-                    Material mainProductMaterial = am.getMainProduct();
-                    String mainProduct = mainProductMaterial.name().toLowerCase().replace("_", " ");
-                    int amount = am.getStoredAmount(mainProductMaterial);
-                    hologramManager.updateMachineHologram(am.location(), am.def().displayName(), amount, mainProduct, am.def().id());
-                    
-                    // Effets visuels spécifiques selon le type de machine
+                    // Mettre à jour l'hologramme si la quantité ou la progress bar a changé
+                    boolean update = false;
+                    if (lastDisplayedAmount.getOrDefault(l, -1) != amount) update = true;
+                    if (!Objects.equals(lastDisplayedBar.get(l), progressBar)) update = true;
+                    if (update) {
+                        hologramManager.updateMachineHologram(am.location(), am.def().displayName(), amount, mainProduct, am.def().id());
+                        lastDisplayedAmount.put(l, amount);
+                        lastDisplayedProgress.put(l, progressCurrent);
+                        lastDisplayedBar.put(l, progressBar);
+                    }
                     addMachineEffects(l, am.def().id());
-                    
-                    // Particules génériques de succès
                     Location effectLocation = l.clone().add(0.5, 1.5, 0.5);
                     l.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, effectLocation, 1,
                         0.1, 0.1, 0.1, 0.05);
                 } else {
                     System.out.println("[SkyTycoon] DEBUG - Machine ne peut pas produire (storage plein?)");
                 }
-                
                 am.scheduleNext(currentTick);
-                
-                plugin.getLogger().info("Machine " + am.def().displayName() + " a produit. Stockage: " + 
+                plugin.getLogger().info("Machine " + am.def().displayName() + " a produit. Stockage: " +
                     am.getStorageDisplay());
-            }
-            
-            // Mise à jour de l'hologramme toutes les 20 ticks (1 seconde)
-            if (currentTick % 20 == 0) { 
-                Material mainProductMaterial = am.getMainProduct();
-                String mainProduct = mainProductMaterial.name().toLowerCase().replace("_", " ");
-                int amount = am.getStoredAmount(mainProductMaterial);
-                hologramManager.updateMachineHologram(am.location(), am.def().displayName(), amount, mainProduct, am.def().id());
+            } else {
+                // Mise à jour de l'hologramme uniquement si la progress bar change
+                if (!Objects.equals(lastDisplayedBar.get(l), progressBar)) {
+                    hologramManager.updateMachineHologram(am.location(), am.def().displayName(), amount, mainProduct, am.def().id());
+                    lastDisplayedAmount.put(l, amount);
+                    lastDisplayedProgress.put(l, progressCurrent);
+                    lastDisplayedBar.put(l, progressBar);
+                }
             }
         }, 1L, 5L); // Exécuter toutes les 5 ticks (0.25 secondes)
-        
         // Stocker la tâche pour pouvoir l'arrêter plus tard
         machineTasks.put(l, task);
     }
@@ -211,21 +226,23 @@ public class MachineManager {
         if (task != null) {
             task.cancel();
         }
-        
         // Supprimer l'hologramme
         hologramManager.removeMachineHologram(location);
-        
         // Supprimer le bloc de la machine (remettre de l'air)
         location.getBlock().setType(Material.AIR);
         System.out.println("[SkyTycoon] Bloc de machine supprimé à " + location);
-        
         // Nettoyer le compteur de ticks
         machineTickCounters.remove(location);
-        
+        // Nettoyer la dernière quantité affichée
+        lastDisplayedAmount.remove(location);
+        lastDisplayedProgress.remove(location);
+        lastDisplayedBar.remove(location);
         ActiveMachine removed = active.remove(location);
         if (removed != null) {
             plugin.getLogger().info("Machine " + removed.def().displayName() + 
                 " désactivée à " + location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ());
+            // Sauvegarder après suppression
+            saveMachinesToFile();
             return true;
         }
         return false;
@@ -328,5 +345,98 @@ public class MachineManager {
 
     public long getCurrentTick(Location loc) {
         return machineTickCounters.getOrDefault(loc, 0L);
+    }
+
+    /**
+     * Sauvegarde les machines actives dans un fichier YAML
+     */
+    public void saveMachinesToFile() {
+        java.io.File file = new java.io.File(plugin.getDataFolder(), "machines_data.yml");
+        YamlConfiguration yaml = new YamlConfiguration();
+        int i = 0;
+        for (Map.Entry<Location, ActiveMachine> entry : active.entrySet()) {
+            ActiveMachine machine = entry.getValue();
+            String key = "machines." + i;
+            yaml.set(key + ".owner", machine.owner().toString());
+            yaml.set(key + ".machineId", machine.def().id());
+            yaml.set(key + ".world", machine.location().getWorld().getName());
+            yaml.set(key + ".x", machine.location().getBlockX());
+            yaml.set(key + ".y", machine.location().getBlockY());
+            yaml.set(key + ".z", machine.location().getBlockZ());
+            yaml.set(key + ".level", machine.getLevel());
+            yaml.set(key + ".nextTick", machine.nextTick());
+            // Stockage
+            Map<String, Integer> storageMap = new HashMap<>();
+            for (Map.Entry<org.bukkit.Material, Integer> st : machine.getStorage().entrySet()) {
+                storageMap.put(st.getKey().name(), st.getValue());
+            }
+            yaml.set(key + ".storage", storageMap);
+            i++;
+        }
+        try {
+            yaml.save(file);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Erreur lors de la sauvegarde des machines: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Charge les machines actives depuis un fichier YAML
+     */
+    public void loadMachinesFromFile() {
+        java.io.File file = new java.io.File(plugin.getDataFolder(), "machines_data.yml");
+        if (!file.exists()) return;
+        // Nettoyer tous les anciens hologrammes pour éviter les doublons/orphelins
+        hologramManager.removeAllHolograms();
+        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+        ConfigurationSection section = yaml.getConfigurationSection("machines");
+        if (section == null) return;
+        for (String key : section.getKeys(false)) {
+            String ownerStr = section.getString(key + ".owner");
+            String machineId = section.getString(key + ".machineId");
+            String worldName = section.getString(key + ".world");
+            int x = section.getInt(key + ".x");
+            int y = section.getInt(key + ".y");
+            int z = section.getInt(key + ".z");
+            int level = section.getInt(key + ".level", 1);
+            long nextTick = section.contains(key + ".nextTick") ? section.getLong(key + ".nextTick") : -1L;
+            long lastProductionTime = section.contains(key + ".lastProductionTime") ? section.getLong(key + ".lastProductionTime") : 0L;
+            org.bukkit.World world = Bukkit.getWorld(worldName);
+            if (world == null) continue;
+            Location loc = new Location(world, x, y, z);
+            MachineDefinition def = definitions.get(machineId);
+            if (def == null) continue;
+            ActiveMachine machine = new ActiveMachine(java.util.UUID.fromString(ownerStr), def, loc, world.getFullTime());
+            machine.setLevel(level);
+            if (nextTick > 0) machine.setNextTick(nextTick);
+            machine.setLastProductionTime(lastProductionTime);
+            // Restaurer le stockage
+            Map<String, Object> storageMap = section.getConfigurationSection(key + ".storage").getValues(false);
+            for (Map.Entry<String, Object> st : storageMap.entrySet()) {
+                try {
+                    org.bukkit.Material mat = org.bukkit.Material.valueOf(st.getKey());
+                    int amount = Integer.parseInt(st.getValue().toString());
+                    machine.getStorage().put(mat, amount);
+                } catch (Exception ignored) {}
+            }
+            // Rattrapage de production après un arrêt serveur
+            long now = System.currentTimeMillis();
+            long intervalTicks = machine.getCurrentInterval();
+            long intervalMs = intervalTicks * 50L;
+            if (lastProductionTime > 0 && now > lastProductionTime && intervalMs > 0) {
+                long cycles = (now - lastProductionTime) / intervalMs;
+                for (long i = 0; i < cycles; i++) {
+                    if (!machine.canProduce()) break;
+                    machine.produceAndCheck();
+                }
+                // Mettre à jour le timestamp pour le prochain cycle
+                machine.setLastProductionTime(lastProductionTime + cycles * intervalMs);
+            }
+            active.put(loc, machine);
+            // Recréer l'hologramme
+            hologramManager.createOrUpdateHologram(machine);
+            // Relancer la tâche de production
+            scheduleMachine(machine);
+        }
     }
 }

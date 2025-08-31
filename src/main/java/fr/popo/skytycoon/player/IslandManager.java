@@ -47,6 +47,8 @@ public class IslandManager {
         Island created = allocateIsland(owner);
         islands.put(owner, created);
         generateStarterPlatform(created, playerToTeleport);
+        // Sauvegarde intelligente après création
+        saveIslandsToFile();
         return created;
     }
 
@@ -142,7 +144,8 @@ public class IslandManager {
         
         // Supprimer l'île de la map
         islands.remove(owner);
-        
+        // Sauvegarde intelligente après suppression
+        saveIslandsToFile();
         // Nettoyer la zone de l'île
         Location spawn = island.spawnLocation(world);
         if (spawn != null) {
@@ -168,6 +171,67 @@ public class IslandManager {
                     world.setBlockData(x, y, z, Bukkit.createBlockData(Material.AIR));
                 }
             }
+        }
+    }
+
+    /**
+     * Sauvegarde les îles dans un fichier YAML
+     */
+    public void saveIslandsToFile() {
+        java.io.File file = new java.io.File(plugin.getDataFolder(), "islands_data.yml");
+        org.bukkit.configuration.file.YamlConfiguration yaml = new org.bukkit.configuration.file.YamlConfiguration();
+        int i = 0;
+        for (Map.Entry<UUID, Island> entry : islands.entrySet()) {
+            Island island = entry.getValue();
+            String key = "islands." + i;
+            yaml.set(key + ".owner", island.owner().toString());
+            yaml.set(key + ".world", island.worldName());
+            yaml.set(key + ".centerX", island.centerX());
+            yaml.set(key + ".centerZ", island.centerZ());
+            yaml.set(key + ".size", island.size());
+            // Stockage
+            Map<String, Integer> storageMap = new java.util.HashMap<>();
+            for (Map.Entry<org.bukkit.Material, Integer> st : island.getStorage().entrySet()) {
+                storageMap.put(st.getKey().name(), st.getValue());
+            }
+            yaml.set(key + ".storage", storageMap);
+            i++;
+        }
+        try {
+            yaml.save(file);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Erreur lors de la sauvegarde des îles: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Charge les îles depuis un fichier YAML
+     */
+    public void loadIslandsFromFile() {
+        java.io.File file = new java.io.File(plugin.getDataFolder(), "islands_data.yml");
+        if (!file.exists()) return;
+        org.bukkit.configuration.file.YamlConfiguration yaml = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(file);
+        org.bukkit.configuration.ConfigurationSection section = yaml.getConfigurationSection("islands");
+        if (section == null) return;
+        for (String key : section.getKeys(false)) {
+            String ownerStr = section.getString(key + ".owner");
+            String worldName = section.getString(key + ".world");
+            int centerX = section.getInt(key + ".centerX");
+            int centerZ = section.getInt(key + ".centerZ");
+            int size = section.getInt(key + ".size", 64);
+            org.bukkit.configuration.ConfigurationSection storageSection = section.getConfigurationSection(key + ".storage");
+            Map<String, Object> storageMap = storageSection != null ? storageSection.getValues(false) : new java.util.HashMap<>();
+            if (ownerStr == null || worldName == null) continue;
+            Island island = new Island(java.util.UUID.fromString(ownerStr), worldName, centerX, centerZ, size);
+            // Restaurer le stockage
+            for (Map.Entry<String, Object> st : storageMap.entrySet()) {
+                try {
+                    org.bukkit.Material mat = org.bukkit.Material.valueOf(st.getKey());
+                    int amount = Integer.parseInt(st.getValue().toString());
+                    island.getStorage().put(mat, amount);
+                } catch (Exception ignored) {}
+            }
+            islands.put(island.owner(), island);
         }
     }
 

@@ -22,6 +22,7 @@ public class ActiveMachine {
     
     // Stockage individuel de cette machine
     private final Map<Material, Integer> storage = new HashMap<>();
+    private long lastProductionTime = 0L; // timestamp système (ms) de la dernière production
 
     public ActiveMachine(UUID owner, MachineDefinition definition, Location location, long currentTick) {
         this.owner = owner;
@@ -48,13 +49,25 @@ public class ActiveMachine {
 
     public long nextTick() { return nextTick; }
 
+    public void setNextTick(long nextTick) {
+        this.nextTick = nextTick;
+    }
+
+    public long getLastProductionTime() {
+        return lastProductionTime;
+    }
+    public void setLastProductionTime(long lastProductionTime) {
+        this.lastProductionTime = lastProductionTime;
+    }
+
     public List<ItemStack> produce() {
         // Animation et effets selon le type de machine
         playMachineAnimation();
-        
         // Production d'items selon le type et stockage dans la machine
         int produced = definition.baseYield() + (level - 1);
-        
+        // Mettre à jour le timestamp de production
+        lastProductionTime = System.currentTimeMillis();
+
         switch (definition.type()) {
             case BASIC_MINER:
                 storage.merge(Material.COBBLESTONE, produced, Integer::sum);
@@ -212,5 +225,17 @@ public class ActiveMachine {
         
         // Effet lumineux pour montrer que la machine fonctionne (réduit)
         world.spawnParticle(Particle.END_ROD, effectLocation, 1, 0, 0, 0, 0);
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public Map<Material, Integer> getStorage() {
+        return storage;
     }
 }

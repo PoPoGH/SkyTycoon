@@ -76,7 +76,7 @@ progress_bars:
     low: "<color:#FF0000>"
     
   # Format de la barre
-  format: "{color}{bar}</color> <white>{percentage}%</white>"
+  format: "{bar}"
 
 # ========================================
 # EXEMPLES D'UTILISATION

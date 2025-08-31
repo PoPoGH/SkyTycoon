@@ -37,44 +37,33 @@ public class HologramManager {
      * Crée un hologramme pour une machine avec ID spécifique
      */
     public void createMachineHologram(Location machineLocation, String machineName, String machineId) {
-        // Position de l'hologramme au-dessus de la machine
-        Location hologramLocation = machineLocation.clone().add(0.5, 2.5, 0.5);
-        
+        // Si pas de LangManager ou pas d'ID, ne rien créer
+        if (langManager == null || machineId == null) {
+            System.out.println("[SkyTycoon] Hologramme non créé : LangManager ou machineId manquant pour " + machineName);
+            return;
+        }
+        // Position de l'hologramme au-dessus de la machine (harmonisé à 1.5 blocs)
+        Location hologramLocation = machineLocation.clone().add(0.5, 1.5, 0.5);
         // Supprimer l'ancien hologramme s'il existe
         removeMachineHologram(machineLocation);
-        
         // Créer le TextDisplay
         TextDisplay hologram = (TextDisplay) machineLocation.getWorld().spawnEntity(
             hologramLocation, EntityType.TEXT_DISPLAY
         );
-        
         // Configuration du TextDisplay
         hologram.setBillboard(org.bukkit.entity.Display.Billboard.CENTER);
         hologram.setViewRange(50.0f);
         hologram.setSeeThrough(false);
-        
         // Obtenir le texte formaté
-        Component nameComponent;
-        Component contentComponent;
-        
-        if (langManager != null && machineId != null) {
-            // Utiliser le LangManager pour un formatage stylé
-            nameComponent = langManager.getMachineHologramName(machineId, null); // Tier à ajouter si disponible
-            contentComponent = langManager.getMachineStartingMessage();
-        } else {
-            // Fallback sur l'ancien système
-            nameComponent = Component.text("§6▬▬ §e" + machineName + " §6▬▬");
-            contentComponent = Component.text("§7● 0 Démarrage...");
-        }
-        
+        int tier = 1;
+        Component nameComponent = langManager.getMachineHologramName(machineId, tier);
+        Component contentComponent = langManager.getMachineStartingMessage();
         // Combiner les deux lignes
         Component fullText = nameComponent.append(Component.text("\n")).append(contentComponent);
         hologram.text(fullText);
-        
         // Stocker l'hologramme
         holograms.put(machineLocation, hologram);
-        
-        System.out.println("[SkyTycoon] Hologramme TextDisplay créé pour " + machineName + " à " + 
+        System.out.println("[SkyTycoon] Hologramme TextDisplay créé pour " + machineName + " à " +
             machineLocation.getBlockX() + "," + machineLocation.getBlockY() + "," + machineLocation.getBlockZ());
     }
     
@@ -160,16 +149,40 @@ public class HologramManager {
      * Supprime tous les hologrammes
      */
     public void removeAllHolograms() {
+        // Supprimer tous les TextDisplay connus
         for (TextDisplay hologram : holograms.values()) {
             if (hologram != null && hologram.isValid()) {
                 hologram.remove();
             }
         }
         holograms.clear();
-        
-        System.out.println("[SkyTycoon] Tous les hologrammes TextDisplay supprimés");
+        // Supprimer tous les TextDisplay orphelins dans tous les mondes
+        for (org.bukkit.World world : org.bukkit.Bukkit.getWorlds()) {
+            for (org.bukkit.entity.Entity entity : world.getEntitiesByClass(TextDisplay.class)) {
+                boolean isManaged = false;
+                for (TextDisplay managed : holograms.values()) {
+                    if (managed.getUniqueId().equals(entity.getUniqueId())) {
+                        isManaged = true;
+                        break;
+                    }
+                }
+                if (!isManaged) {
+                    entity.remove();
+                    System.out.println("[SkyTycoon] TextDisplay orphelin supprimé en " + entity.getLocation());
+                }
+            }
+        }
+        System.out.println("[SkyTycoon] Tous les hologrammes TextDisplay supprimés (y compris orphelins)");
     }
     
+    /**
+     * Crée ou met à jour l'hologramme d'une machine à partir de son instance
+     */
+    public void createOrUpdateHologram(ActiveMachine machine) {
+        // Utilise le nom et l'ID de la machine pour l'affichage
+        createMachineHologram(machine.location(), machine.def().displayName(), machine.def().id());
+    }
+
     /**
      * Obtient l'icône Unicode pour un produit
      */
