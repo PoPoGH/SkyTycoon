@@ -27,8 +27,8 @@ public class MachineMenu {
         this.player = player;
         this.machine = machine;
         this.mainMenu = new MachineMainMenu(plugin, player, machine);
-        // Utilise un CHEST 5 slots pour tester le rendu des couleurs sur le titre
-        this.inventory = Bukkit.createInventory(null, 5,
+        // Utilise un HOPPER 5 slots pour le sous-menu stockage
+        this.inventory = Bukkit.createInventory(null, InventoryType.HOPPER,
             lang.getMachineHologramName(machine.def().id(), machine.getLevel()));
         setupMenu();
     }
