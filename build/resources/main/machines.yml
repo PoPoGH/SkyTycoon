@@ -1,0 +1,61 @@
+# Définition des machines SkyTycoon
+# Progression logique : Minage → Bois → Farm → Mobs → Vente
+# 
+# INTERACTIONS:
+# • Placement: Clic droit avec l'item machine
+# • Clic droit: Récupérer 1 item + voir le contenu
+# • Shift + Clic droit: Récupérer un stack entier
+# • Shift + Clic gauche: Récupérer la machine complète
+
+machines:
+  basic_miner:
+    type: BASIC_MINER
+    name: "§8⛏ §7Machine à Miner §8⛏"
+    block: COBBLESTONE
+    base-interval: 40
+    base-yield: 2
+    produces: COBBLESTONE
+    description: "Mine automatiquement de la pierre"
+    
+  wood_cutter:
+    type: WOOD_CUTTER
+    name: "§6🪓 §eMachine à Bois §6🪓"
+    block: OAK_LOG
+    base-interval: 35
+    base-yield: 2
+    produces: OAK_LOG
+    description: "Coupe du bois automatiquement"
+    
+  crop_farm:
+    type: CROP_FARM
+    name: "§a🌾 §2Machine à Farm §a🌾"
+    block: HAY_BLOCK
+    base-interval: 50
+    base-yield: 3
+    produces: WHEAT
+    description: "Cultive du blé automatiquement"
+    
+  mob_grinder:
+    type: MOB_GRINDER
+    name: "§c⚔ §4Machine à Mobs §c⚔"
+    block: REDSTONE_BLOCK
+    base-interval: 60
+    base-yield: 1
+    produces: ROTTEN_FLESH
+    description: "Tue des mobs et récupère leurs drops"
+    
+  sell_station:
+    type: SELL_STATION
+    name: "§e💰 §6Station de Vente §e💰"
+    block: EMERALD_BLOCK
+    base-interval: 20
+    base-yield: 5
+    produces: EMERALD
+    description: "Convertit les ressources en argent"
+
+# PROGRESSION NATURELLE:
+# 1. Machine à Miner → Pierre (base)
+# 2. Machine à Bois → Bois (construction)  
+# 3. Machine à Farm → Blé (nourriture)
+# 4. Machine à Mobs → Chair pourrie + XP (combat)
+# 5. Station de Vente → Émeraudes (économie)

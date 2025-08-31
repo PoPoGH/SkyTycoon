@@ -1,0 +1,95 @@
+# Configuration des messages et hologrammes SkyTycoon
+# Supporte MiniMessage pour des textes stylés
+# Documentation: https://docs.advntr.dev/minimessage/format.html
+
+# ========================================
+# HOLOGRAMMES DES MACHINES
+# ========================================
+holograms:
+  machine:
+    # Format du nom de la machine (ligne du haut)
+    name: "<gradient:#FFD700:#FFA500><bold>{name}</bold></gradient>"
+    
+    # Format du contenu (ligne du bas)
+    content: "<color:#00FF00>⚡</color> <white>{amount}</white> <color:#87CEEB>{product}</color>"
+    
+    # Message quand la machine démarre
+    starting: "<color:#808080>● Démarrage...</color>"
+    
+    # Message quand le stockage est plein
+    storage_full: "<color:#FF0000>⚠ Stockage plein!</color>"
+    
+    # Message quand la machine est en pause
+    paused: "<color:#FFA500>⏸ En pause</color>"
+
+# ========================================
+# MESSAGES SPÉCIFIQUES PAR MACHINE
+# ========================================
+machine_names:
+  basic_miner:
+    name: "{machine_glyph}{tier_glyph}"
+    content: "<white>{amount}</white> {product_glyph}"
+  wood_cutter:
+    name: "{machine_glyph}{tier_glyph}"
+    content: "<white>{amount}</white> {product_glyph}"
+  crop_farm:
+    name: "{machine_glyph}{tier_glyph}"
+    content: "<white>{amount}</white> {product_glyph}"
+  mob_grinder:
+    name: "{machine_glyph}{tier_glyph}"
+    content: "<white>{amount}</white> {product_glyph}"
+  sell_station:
+    name: "{machine_glyph}{tier_glyph}"
+    content: "<white>{amount}</white> {product_glyph}"
+
+# ========================================
+# MESSAGES GÉNÉRAUX
+# ========================================
+messages:
+  # Messages d'interaction avec les machines
+  machine_placed: "<green>✓</green> <white>Machine placée avec succès !</white>"
+  machine_removed: "<red>✗</red> <white>Machine récupérée !</white>"
+  item_collected: "<yellow>+{amount}</yellow> <white>{product} récupéré !</white>"
+  
+  # Messages d'erreur
+  no_permission: "<red>❌ Vous n'avez pas la permission !</red>"
+  invalid_location: "<red>❌ Emplacement invalide !</red>"
+  machine_not_found: "<red>❌ Aucune machine trouvée ici !</red>"
+  
+  # Messages d'information
+  island_created: "<green>🏝 Île créée avec succès !</green>"
+  teleported: "<blue>✈ Téléportation vers votre île...</blue>"
+
+# ========================================
+# BARRES DE PROGRESSION
+# ========================================
+progress_bars:
+  # Caractères pour les barres de progression
+  filled: "█"
+  empty: "░"
+  
+  # Couleurs des barres
+  colors:
+    full: "<color:#00FF00>"
+    high: "<color:#FFD700>"
+    medium: "<color:#FFA500>"
+    low: "<color:#FF0000>"
+    
+  # Format de la barre
+  format: "{color}{bar}</color> <white>{percentage}%</white>"
+
+# ========================================
+# EXEMPLES D'UTILISATION
+# ========================================
+# {name} = nom de la machine
+# {amount} = quantité stockée
+# {product} = nom du produit
+# {percentage} = pourcentage de remplissage
+# {bar} = barre de progression visuelle
+
+# Exemples de MiniMessage:
+# <gradient:#FF0000:#0000FF>Texte avec gradient</gradient>
+# <rainbow>Texte arc-en-ciel</rainbow>
+# <bold>Gras</bold> <italic>Italique</italic>
+# <color:#FF0000>Rouge custom</color>
+# <hover:show_text:'Texte au survol'>Texte</hover>

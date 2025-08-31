@@ -1,0 +1,33 @@
+# Mapping des glyphs Unicode pour les machines et produits
+# Utilisé pour remplacer dynamiquement par l'image (Nexo ou resource pack custom)
+
+# Exemple :
+# miner: "ꐒ"
+# cobblestone: "ꐒ"
+
+machines:
+  basic_miner: ""
+  basic_miner_tiers:
+    1: ""
+    2: ""
+    3: ""
+    4: ""
+    5: ""
+    6: ""
+    7: ""
+    8: ""
+    9: ""
+    10:  ""
+
+products:
+  cobblestone: ""
+
+progress_bar:
+  1: ""
+  2: ""
+  3: ""
+  4: ""
+  5: ""
+  6: ""
+  7: ""
+  8: ""

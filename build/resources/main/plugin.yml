@@ -1,0 +1,20 @@
+name: SkyTycoon
+main: fr.popo.skytycoon.SkyTycoonPlugin
+version: 0.1.0-SNAPSHOT
+authors: ["PoPo"]
+api-version: "1.21"
+folia-supported: true
+description: "Un mélange entre le Skyblock et un Tycoon sur Folia"
+depend: ["Worlds", "NBTAPI"]
+
+commands:
+  skytycoon:
+    description: "Commande principale SkyTycoon"
+    usage: "/st [is|reload]"
+    aliases:
+      - "st"
+
+permissions:
+  skytycoon.admin:
+    description: "Administration SkyTycoon"
+    default: op

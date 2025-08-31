@@ -1,0 +1,44 @@
+# Configuration générale SkyTycoon
+starting-machine: basic_miner
+
+# Configuration des îles
+island:
+  # Type de génération: seul 'schematic' est supporté
+  # Place vos fichiers .schem dans plugins/SkyTycoon/schematics/
+  generation_type: 'schematic'
+  
+  # Nom de la schématique à utiliser (sans extension .schem)
+  # Le fichier doit être dans plugins/SkyTycoon/schematics/
+  # Format supporté: .schem (Sponge Schematic v2)
+  schematic_name: 'desert'
+  
+  # Position Y où coller la schématique (si generation_type = 'schematic')
+  schematic_y: 64
+  
+  # Taille de l'île pour l'espacement entre les îles
+  size: 50
+
+# Configuration des hologrammes (MiniMessage)
+holograms:
+  # Hologramme titre de la machine
+  machine_title: "<gradient:#FFD700:#FFA500><bold>{machine_name}</bold></gradient>"
+  
+  # Hologramme de contenu avec production
+  machine_content: "<color:#00FF00>{icon}</color> <white>{amount}</white> <gray>{product}</gray>"
+  
+  # Hologramme en cours de démarrage
+  machine_starting: "<color:#FFFF00>⚡ <italic>Démarrage...</italic></color>"
+  
+  # Hologramme quand stockage plein
+  machine_full: "<color:#FF4444>⚠ <bold>STOCKAGE PLEIN</bold> ⚠</color>"
+  
+  # Hologramme en production
+  machine_producing: "<color:#00FFFF>✨ <italic>Production en cours...</italic> ✨</color>"
+  
+  # Icônes par produit (Unicode)
+  product_icons:
+    cobblestone: "⛏"
+    oak_log: "🪓" 
+    wheat: "🌾"
+    rotten_flesh: "⚔"
+    emerald: "💰"
