@@ -27,7 +27,7 @@ holograms:
 # ========================================
 machine_names:
   basic_miner:
-    name: "{machine_glyph}{tier_glyph}"
+    name: "<color:#f9f9f9>{machine_glyph}{tier_glyph}</color>"
     content: "<white>{amount}</white> {product_glyph}"
   wood_cutter:
     name: "{machine_glyph}{tier_glyph}"
@@ -39,6 +39,9 @@ machine_names:
     name: "{machine_glyph}{tier_glyph}"
     content: "<white>{amount}</white> {product_glyph}"
   sell_station:
+    name: "{machine_glyph}{tier_glyph}"
+    content: "<white>{amount}</white> {product_glyph}"
+  compact_station:
     name: "{machine_glyph}{tier_glyph}"
     content: "<white>{amount}</white> {product_glyph}"
 

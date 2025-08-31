@@ -439,4 +439,79 @@ public class MachineManager {
             scheduleMachine(machine);
         }
     }
+
+    /**
+     * Retire un certain nombre d'items du stockage principal de la machine et les donne au joueur,
+     * sans jamais dépasser la capacité de l'inventaire (le reste reste dans la machine)
+     */
+    public void withdrawFromMachine(org.bukkit.entity.Player player, ActiveMachine machine, int amount) {
+        Material mainProduct = machine.getMainProduct();
+        int available = machine.getStoredAmount(mainProduct);
+        if (available <= 0) {
+            player.sendMessage("§cAucun item à retirer.");
+            return;
+        }
+        int maxStackSize = mainProduct.getMaxStackSize();
+        int toTake = Math.min(amount, available);
+        // Calculer la place disponible dans l'inventaire
+        int freeSpace = getFreeSpaceFor(player, mainProduct);
+        if (freeSpace <= 0) {
+            player.sendMessage("§eVotre inventaire est plein !");
+            return;
+        }
+        int finalTake = Math.min(toTake, freeSpace);
+        if (finalTake <= 0) {
+            player.sendMessage("§eVotre inventaire est plein !");
+            return;
+        }
+        ItemStack stack = machine.retrieveItems(mainProduct, finalTake);
+        player.getInventory().addItem(stack);
+        if (finalTake < toTake) {
+            player.sendMessage("§eVous n'aviez pas assez de place, seuls " + finalTake + " ont été retirés.");
+        } else {
+            player.sendMessage("§aVous avez retiré " + finalTake + " " + mainProduct.name().toLowerCase().replace("_", " ") + ".");
+        }
+    }
+
+    /**
+     * Retire tout le stockage principal de la machine et le donne au joueur,
+     * sans jamais dépasser la capacité de l'inventaire (le reste reste dans la machine)
+     */
+    public void withdrawAllFromMachine(org.bukkit.entity.Player player, ActiveMachine machine) {
+        Material mainProduct = machine.getMainProduct();
+        int available = machine.getStoredAmount(mainProduct);
+        if (available <= 0) {
+            player.sendMessage("§cAucun item à retirer.");
+            return;
+        }
+        int freeSpace = getFreeSpaceFor(player, mainProduct);
+        if (freeSpace <= 0) {
+            player.sendMessage("§eVotre inventaire est plein !");
+            return;
+        }
+        int toTake = Math.min(available, freeSpace);
+        ItemStack stack = machine.retrieveItems(mainProduct, toTake);
+        player.getInventory().addItem(stack);
+        if (toTake < available) {
+            player.sendMessage("§eVous n'aviez pas assez de place, seuls " + toTake + " ont été retirés.");
+        } else {
+            player.sendMessage("§aVous avez retiré " + toTake + " " + mainProduct.name().toLowerCase().replace("_", " ") + ".");
+        }
+    }
+
+    /**
+     * Calcule la place disponible dans l'inventaire du joueur pour un type d'item
+     */
+    private int getFreeSpaceFor(org.bukkit.entity.Player player, Material material) {
+        int free = 0;
+        int maxStack = material.getMaxStackSize();
+        for (ItemStack item : player.getInventory().getStorageContents()) {
+            if (item == null || item.getType() == Material.AIR) {
+                free += maxStack;
+            } else if (item.getType() == material && item.getAmount() < maxStack) {
+                free += (maxStack - item.getAmount());
+            }
+        }
+        return free;
+    }
 }
