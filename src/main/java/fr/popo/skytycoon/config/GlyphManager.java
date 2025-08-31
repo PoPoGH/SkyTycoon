@@ -92,7 +92,6 @@ public class GlyphManager {
     }
 
     public String getProgressBarGlyph(int step) {
-        // Clamp entre 1 et 8
         int idx = Math.max(1, Math.min(8, step));
         if (progressBarGlyphs == null) {
             loadProgressBarGlyphs();
