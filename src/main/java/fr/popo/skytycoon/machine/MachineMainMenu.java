@@ -3,6 +3,7 @@ package fr.popo.skytycoon.machine;
 import fr.popo.skytycoon.SkyTycoonPlugin;
 import fr.popo.skytycoon.config.LangManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -34,10 +35,30 @@ public class MachineMainMenu {
         // Slot 11 : Catégorie Stockage (ouvre le sous-menu hopper)
         ItemStack storage = new ItemStack(Material.CHEST);
         ItemMeta storageMeta = storage.getItemMeta();
-        storageMeta.displayName(Component.text("Stockage"));
+        storageMeta.displayName(lang.getMenuStorage().decoration(TextDecoration.ITALIC, false));
         storage.setItemMeta(storageMeta);
         inventory.setItem(11, storage);
-        // ...autres catégories ou boutons à ajouter ici si besoin...
+        
+        // Slot 13 : Catégorie Amélioration (placeholder)
+        ItemStack upgrade = new ItemStack(Material.ANVIL);
+        ItemMeta upgradeMeta = upgrade.getItemMeta();
+        upgradeMeta.displayName(lang.getMenuUpgrade().decoration(TextDecoration.ITALIC, false));
+        upgrade.setItemMeta(upgradeMeta);
+        inventory.setItem(13, upgrade);
+        
+        // Slot 15 : Catégorie Paramètres (placeholder)
+        ItemStack settings = new ItemStack(Material.COMPARATOR);
+        ItemMeta settingsMeta = settings.getItemMeta();
+        settingsMeta.displayName(lang.getMenuSettings().decoration(TextDecoration.ITALIC, false));
+        settings.setItemMeta(settingsMeta);
+        inventory.setItem(15, settings);
+        
+        // Slot 22 : Catégorie Informations (placeholder)
+        ItemStack info = new ItemStack(Material.BOOK);
+        ItemMeta infoMeta = info.getItemMeta();
+        infoMeta.displayName(lang.getMenuInfo().decoration(TextDecoration.ITALIC, false));
+        info.setItemMeta(infoMeta);
+        inventory.setItem(22, info);
     }
 
     public void open() {

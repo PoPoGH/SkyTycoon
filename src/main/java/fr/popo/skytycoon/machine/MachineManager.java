@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
@@ -196,7 +197,7 @@ public class MachineManager {
         ItemStack item = new ItemStack(def.blockMaterial());
         ItemMeta meta = item.getItemMeta();
         if(meta != null) {
-            meta.displayName(Component.text(def.displayName()));
+            meta.displayName(Component.text(def.displayName()).decoration(TextDecoration.ITALIC, false));
             meta.getPersistentDataContainer().set(keyMachineId, PersistentDataType.STRING, id);
             item.setItemMeta(meta);
         }

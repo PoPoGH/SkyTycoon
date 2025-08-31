@@ -3,6 +3,7 @@ package fr.popo.skytycoon.machine;
 import fr.popo.skytycoon.SkyTycoonPlugin;
 import fr.popo.skytycoon.config.LangManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -37,37 +38,48 @@ public class MachineMenu {
         // Slot 0 : Retour
         ItemStack back = new ItemStack(Material.ARROW);
         ItemMeta backMeta = back.getItemMeta();
-        backMeta.displayName(Component.text("Retour"));
+        backMeta.displayName(lang.getMenuStorageBack().decoration(TextDecoration.ITALIC, false));
         back.setItemMeta(backMeta);
         inventory.setItem(0, back);
 
         // Slot 1 : Retirer 1
         ItemStack takeOne = new ItemStack(Material.HOPPER);
         ItemMeta takeOneMeta = takeOne.getItemMeta();
-        takeOneMeta.displayName(Component.text("Retirer 1"));
+        takeOneMeta.displayName(lang.getMenuStorageTakeOne().decoration(TextDecoration.ITALIC, false));
         takeOne.setItemMeta(takeOneMeta);
         inventory.setItem(1, takeOne);
 
         // Slot 2 : Affichage stockage
         ItemStack info = new ItemStack(Material.CHEST);
         ItemMeta meta = info.getItemMeta();
-        meta.displayName(Component.text("Stockage: " + machine.getStorageDisplay()));
+        meta.displayName(lang.getMenuStorageInfo(machine.getStorageDisplayWithGlyphs(lang)).decoration(TextDecoration.ITALIC, false));
         info.setItemMeta(meta);
         inventory.setItem(2, info);
 
         // Slot 3 : Retirer un stack
         ItemStack takeStack = new ItemStack(Material.DROPPER);
         ItemMeta takeStackMeta = takeStack.getItemMeta();
-        takeStackMeta.displayName(Component.text("Retirer un stack"));
+        takeStackMeta.displayName(lang.getMenuStorageTakeStack().decoration(TextDecoration.ITALIC, false));
         takeStack.setItemMeta(takeStackMeta);
         inventory.setItem(3, takeStack);
 
         // Slot 4 : Tout retirer
         ItemStack takeAll = new ItemStack(Material.BARREL);
         ItemMeta takeAllMeta = takeAll.getItemMeta();
-        takeAllMeta.displayName(Component.text("Tout retirer"));
+        takeAllMeta.displayName(lang.getMenuStorageTakeAll().decoration(TextDecoration.ITALIC, false));
         takeAll.setItemMeta(takeAllMeta);
         inventory.setItem(4, takeAll);
+    }
+
+    /**
+     * Met à jour l'affichage du stockage dans le menu
+     */
+    private void updateStorageDisplay() {
+        ItemStack info = new ItemStack(Material.CHEST);
+        ItemMeta meta = info.getItemMeta();
+        meta.displayName(lang.getMenuStorageInfo(machine.getStorageDisplayWithGlyphs(lang)).decoration(TextDecoration.ITALIC, false));
+        info.setItemMeta(meta);
+        inventory.setItem(2, info);
     }
 
     public void open() {
@@ -79,9 +91,18 @@ public class MachineMenu {
         event.setCancelled(true);
         switch (slot) {
             case 0 -> mainMenu.open(); // Retour
-            case 1 -> plugin.machines().withdrawFromMachine(player, machine, 1);
-            case 3 -> plugin.machines().withdrawFromMachine(player, machine, 64);
-            case 4 -> plugin.machines().withdrawAllFromMachine(player, machine);
+            case 1 -> {
+                plugin.machines().withdrawFromMachine(player, machine, 1);
+                updateStorageDisplay(); // Mettre à jour l'affichage après retrait
+            }
+            case 3 -> {
+                plugin.machines().withdrawFromMachine(player, machine, 64);
+                updateStorageDisplay(); // Mettre à jour l'affichage après retrait
+            }
+            case 4 -> {
+                plugin.machines().withdrawAllFromMachine(player, machine);
+                updateStorageDisplay(); // Mettre à jour l'affichage après retrait
+            }
         }
     }
 

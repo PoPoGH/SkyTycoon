@@ -82,6 +82,23 @@ progress_bars:
   format: "{bar}"
 
 # ========================================
+# TEXTES DES MENUS
+# ========================================
+menu:
+  main:
+    storage: "<gradient:#FFD700:#FFA500>📦 Stockage</gradient>"
+    upgrade: "<gradient:#00FF7F:#32CD32>⬆ Amélioration</gradient>"
+    settings: "<gradient:#87CEEB:#4682B4>⚙ Paramètres</gradient>"
+    info: "<gradient:#9370DB:#8A2BE2>ℹ Informations</gradient>"
+  
+  storage:
+    back: "<color:#FF6B6B>⬅ Retour</color>"
+    take_one: "<gradient:#4CAF50:#66BB6A>⬇ Retirer 1</gradient>"
+    take_stack: "<gradient:#FFA726:#FF9800>⬇ Retirer 64</gradient>"
+    take_all: "<gradient:#EF5350:#F44336>⬇ Tout retirer</gradient>"
+    storage_info: "<blue>Stockage:</blue> {storage}"
+
+# ========================================
 # EXEMPLES D'UTILISATION
 # ========================================
 # {name} = nom de la machine
@@ -89,6 +106,7 @@ progress_bars:
 # {product} = nom du produit
 # {percentage} = pourcentage de remplissage
 # {bar} = barre de progression visuelle
+# {storage} = affichage du stockage
 
 # Exemples de MiniMessage:
 # <gradient:#FF0000:#0000FF>Texte avec gradient</gradient>

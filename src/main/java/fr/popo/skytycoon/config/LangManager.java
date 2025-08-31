@@ -2,6 +2,7 @@ package fr.popo.skytycoon.config;
 
 import fr.popo.skytycoon.SkyTycoonPlugin;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -198,6 +199,56 @@ public class LangManager {
             placeholderMap.put(placeholders[i], placeholders[i + 1]);
         }
         return getMessage(path, placeholderMap);
+    }
+
+    /**
+     * Textes pour les menus
+     */
+    public Component getMenuStorage() {
+        return getMessage("menu.main.storage");
+    }
+
+    public Component getMenuUpgrade() {
+        return getMessage("menu.main.upgrade");
+    }
+
+    public Component getMenuSettings() {
+        return getMessage("menu.main.settings");
+    }
+
+    public Component getMenuInfo() {
+        return getMessage("menu.main.info");
+    }
+
+    public Component getMenuStorageBack() {
+        return getMessage("menu.storage.back");
+    }
+
+    public Component getMenuStorageTakeOne() {
+        return getMessage("menu.storage.take_one");
+    }
+
+    public Component getMenuStorageTakeStack() {
+        return getMessage("menu.storage.take_stack");
+    }
+
+    public Component getMenuStorageTakeAll() {
+        return getMessage("menu.storage.take_all");
+    }
+
+    public Component getMenuStorageInfo(String storageDisplay) {
+        // Nettoyer les codes de couleur legacy qui sont incompatibles avec MiniMessage
+        String cleanStorageDisplay = storageDisplay.replaceAll("§[0-9a-fk-or]", "");
+
+        String rawMessage = getRawMessage("menu.storage.storage_info");
+        String finalMessage = rawMessage.replace("{storage}", cleanStorageDisplay);
+
+        try {
+            return miniMessage.deserialize(finalMessage).decoration(TextDecoration.ITALIC, false);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Erreur parsing MiniMessage: " + e.getMessage());
+            return Component.text(finalMessage).decoration(TextDecoration.ITALIC, false);
+        }
     }
 
     public void setGlyphManager(GlyphManager glyphManager) {

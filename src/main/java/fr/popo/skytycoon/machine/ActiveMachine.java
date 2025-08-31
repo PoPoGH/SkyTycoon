@@ -7,6 +7,8 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
+import fr.popo.skytycoon.config.LangManager;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -164,6 +166,21 @@ public class ActiveMachine {
         Material mainProduct = getMainProduct();
         int amount = getStoredAmount(mainProduct);
         return "§f" + amount + " §7" + mainProduct.name().toLowerCase().replace("_", " ");
+    }
+
+    /**
+     * Obtient une représentation textuelle du stockage avec glyphs pour l'affichage en menu
+     */
+    public String getStorageDisplayWithGlyphs(LangManager langManager) {
+        Material mainProduct = getMainProduct();
+        int amount = getStoredAmount(mainProduct);
+        String productName = mainProduct.name().toLowerCase().replace("_", " ");
+        String glyph = langManager.getProductGlyph(productName);
+
+        // Si un glyph existe, l'utiliser, sinon utiliser le nom du produit
+        String productDisplay = glyph.isEmpty() ? productName : glyph;
+
+        return amount + " " + productDisplay;
     }
     
     /**
