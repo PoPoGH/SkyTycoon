@@ -184,11 +184,7 @@ public class LangManager {
         int step = Math.max(1, Math.min(8, (percentage + 12) / 13)); // 0-12:1, 13-25:2, ..., 88-100:8
         String glyph = glyphManager != null ? glyphManager.getProgressBarGlyph(step) : "|";
         String bar = glyph;
-        String colorPath;
-        if (percentage >= 80) colorPath = "progress_bars.colors.full";
-        else if (percentage >= 60) colorPath = "progress_bars.colors.high";
-        else if (percentage >= 30) colorPath = "progress_bars.colors.medium";
-        else colorPath = "progress_bars.colors.low";
+        String colorPath = ;
         String color = getRawMessage(colorPath, "<white>");
         String format = getRawMessage("progress_bars.format", "{color}{bar} <white>{percentage}%</white>");
         format = format.replace("{bar}", bar).replace("{percentage}", String.valueOf(percentage)).replace("{color}", color);
